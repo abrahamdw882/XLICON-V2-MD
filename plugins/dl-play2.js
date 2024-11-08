@@ -11,7 +11,7 @@ let handler = async (m, { command, conn, text }) => {
     if (command === "play2") {
       conn.reply(m.chat, "*_sending your audio..._*", m);
       try {
-        let response = await fetch(`https://api.lolhuman.xyz/api/ytplay2?apikey=${lolkeysapi}&query=${text}`);
+        let response = await fetch(`https://ironman.koyeb.app/ironman/dl/yta?url=${text}`);
         let result = await response.json();
         let sent = await conn.sendMessage(m.chat, {
           'audio': { 'url': result.result.audio },
@@ -44,7 +44,7 @@ let handler = async (m, { command, conn, text }) => {
           'mimetype': "video/mp4"
         }, { 'quoted': m });
       } catch {
-        let response = await fetch(`https://api.lolhuman.xyz/api/ytplay2?apikey=${lolkeysapi}&query=${text}`);
+        let response = await fetch(`https://ironman.koyeb.app/ironman/dl/yta?url=${text}`);
         let result = await response.json();
         await conn.sendFile(m.chat, result.result.video, "error.mp4", "_XLICON V2 MD_", m);
       }
