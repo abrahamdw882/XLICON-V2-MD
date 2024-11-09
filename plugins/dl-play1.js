@@ -52,8 +52,8 @@ let handler = async (messageContext, {
   return connection.sendMessage(messageContext.chat, audioMessage, { "quoted": messageContext });
 };
 
-handler.help = ["play"];
+handler.help = ["play1"];
 handler.tags = ["downloader"];
-handler.command = /^play|audio$/i;
+handler.command = /^play1|audio$/i;
 
 export default handler;
