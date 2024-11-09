@@ -114,7 +114,8 @@
         "xfarr-api": "^1.0.3",
         "yargs": "^17.6.0",
         "youtube-yts": "^2.0.0",
-        "youtubedl-core": "npm:@distube/ytdl-core"
+        "youtubedl-core": "npm:@distube/ytdl-core",
+        "yt-search": "^2.12.1"
     },
     "overrides": {
         "cache-manager": "5.2.2"
