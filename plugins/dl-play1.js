@@ -1,85 +1,59 @@
-import ytdl from 'ytdl-core';
-import fs from 'fs';
-import { pipeline } from 'stream';
-import { promisify } from 'util';
-import os from 'os';
-import axios from 'axios';
+import ytSearch from "yt-search";
+import { youtubedl, youtubedlv2 } from "@bochilteam/scraper-sosmed";
 
-const streamPipeline = promisify(pipeline);
-
-let handler = async (message, { conn, command, text, usedPrefix }) => {
-  if (!text) {
-    throw "Use example " + usedPrefix + command + " <query>";
+let handler = async (messageContext, {
+  conn: connection,
+  command,
+  text: searchQuery,
+  usedPrefix
+}) => {
+  if (!searchQuery) {
+    throw `Example usage:\n${usedPrefix + command} Aya hai bulawa naat`;
   }
-  
-  await message.react('⏳');
-  try {
-    const query = encodeURIComponent(text);
-    const searchResponse = await axios.get(`https://weeb-api.vercel.app/ytsearch?query=${query}`);
-    const video = searchResponse.data.results[0];
 
-    if (!video) {
-      throw "Video not found, try another title.";
+  let searchResults = await ytSearch(searchQuery);
+  let video = searchResults.videos[0];
+
+  await connection.sendMessage(messageContext.chat, {
+    "react": {
+      "text": "⏳",
+      "key": messageContext.key
     }
+  });
 
-    const { title, thumbnail, duration, views, uploaded, url } = video;
-
-    const videoInfo = `⬡▸  ••๑⋯ ⬡▸  Y O U T U B E ⬡▸  ⋯⋅๑•• ✼\n\n  ⬡▸  Title: ${title}\n\n  ⬡▸  Duration: ${duration}\n\n  ⬡▸  Views: ${views}\n\n  ⬡▸  Upload: ${uploaded}\n\n  ⬡▸  Link: ${url}\n\n⊱─━━━━⊱༻XLICON●v2༺⊰━━━━─⬡▸`;
-
-    conn.sendMessage(message.chat, {
-      image: { url: thumbnail },
-      caption: videoInfo,
-      footer: "Author"
-    }, { quoted: message });
-
-    const audioStream = ytdl(url, {
-      filter: "audioonly",
-      quality: "highestaudio"
-    });
-
-    const tmpDir = os.tmpdir();
-    const audioPath = `${tmpDir}/${title}.mp3`;
-    const audioWriteStream = fs.createWriteStream(audioPath);
-
-    await streamPipeline(audioStream, audioWriteStream);
-
-    const audioMessage = {
-      audio: { url: audioPath },
-      mimetype: "audio/mpeg",
-      ptt: false,
-      fileName: `${title}.mp3`,
-      contextInfo: {
-        externalAdReply: {
-          showAdAttribution: true,
-          mediaType: 2,
-          mediaUrl: url,
-          title: title,
-          body: "Here is your song made by XLICON-v2",
-          sourceUrl: url,
-          thumbnail: await (await conn.getFile(thumbnail)).data
-        }
-      }
-    };
-
-    await conn.sendMessage(message.chat, audioMessage, { quoted: message });
-
-    fs.unlink(audioPath, (err) => {
-      if (err) {
-        console.error("Failed to delete audio file:", err);
-      } else {
-        console.log("Deleted audio file:", audioPath);
-      }
-    });
-
-  } catch (error) {
-    console.error(error);
-    throw "An error occurred while searching for YouTube videos or fetching the audio.";
+  if (!video) {
+    throw "Couldn’t find anything, try another name.";
   }
+
+  let {
+    title,
+    description,
+    videoId,
+    durationH,
+    viewH,
+    publishedTime
+  } = video;
+
+  const videoUrl = "https://www.youtube.com/watch?v=" + videoId;
+
+  const downloadInfo = await youtubedl(videoUrl).catch(async () => await youtubedlv2(videoUrl));
+  const audioUrl = await downloadInfo.audio["128kbps"].download();
+
+  let nowPlayingMessage = `*🎧 Now Playing:* ${title}`;
+  
+  await connection.sendMessage(messageContext.chat, { "text": nowPlayingMessage }, { "quoted": messageContext });
+
+  const audioMessage = {
+    "audio": { url: audioUrl },
+    "mimetype": "audio/mp4",
+    "ptt": false
+  };
+
+  return connection.sendMessage(messageContext.chat, audioMessage, { "quoted": messageContext });
 };
 
-handler.help = ["play1"].map(command => command + " <query>");
-handler.tags = ['downloader'];
-handler.command = /^play1$/i;
-handler.exp = 0;
+handler.help = ["play"];
+handler.tags = ["downloader"];
+handler.command = /^play|audio$/i;
 
 export default handler;
