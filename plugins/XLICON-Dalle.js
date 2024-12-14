@@ -10,25 +10,40 @@ let handler = async (m) => {
     throw "✳️ Please provide text for the AI to process.";
   }
 
+ 
   await m.react('⏳');
 
   try {
   
     let response = await fetch(`https://bk9.fun/ai/Text2Img?q=${encodeURIComponent(text)}`);
-
     if (!response.ok) {
       throw `❌ API returned status: ${response.status}`;
     }
+
     let json = await response.json();
 
-    
-    let aiResponse = json.BK9 || "No response received from the API.";
-
    
+    let imageUrl = json.BK9;
+    if (!imageUrl) {
+      throw "❌ No image URL received from the API.";
+    }
+
+    
+    let imageResponse = await fetch(imageUrl);
+    if (!imageResponse.ok) {
+      throw "❌ Failed to download the image.";
+    }
+    let imageBuffer = await imageResponse.buffer();
+
+
     await m.react('✅');
-    const result = { text: aiResponse };
-    await conn.sendMessage(m.chat, result, { quoted: m });
+    await conn.sendMessage(
+      m.chat,
+      { image: imageBuffer, caption: `✨ Here is your image for: "${text}"` },
+      { quoted: m }
+    );
   } catch (error) {
+   
     await m.react('❌');
     throw `❌ Error: ${error.message || error}`;
   }
