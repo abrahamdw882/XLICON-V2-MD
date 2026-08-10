@@ -1,35 +1,34 @@
 const axios = require('axios');
 
 module.exports = {
-name: 'menu',
-description: 'Show available bot commands',
-aliases: ['help', 'cmdlist', 'commands'],
+    name: 'menu',
+    description: 'Show available bot commands',
+    aliases: ['help', 'cmdlist', 'commands'],
 
-async execute(sock, m) {    
-    const prefix = global.BOT_PREFIX || '.';    
-    
-    const now = new Date();
-    
-    const date = now.toLocaleDateString('en-GB', { 
-        day: 'numeric', 
-        month: 'long', 
-        year: 'numeric',
-        timeZone: 'Africa/Accra'
-    });
-    
-    const time = now.toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        second: '2-digit',
-        hour12: true,
-        timeZone: 'Africa/Accra'
-    });
-    
-    const botOwner = global.ownerName  || 'ABZTECH';
-    
-    const user = m.pushName || m.sender?.split('@')[0] || 'User';
-    
-    const menuText = `
+    async execute(sock, m) {
+        const prefix = global.BOT_PREFIX || '.';
+
+        const now = new Date();
+
+        const date = now.toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            timeZone: 'Africa/Accra'
+        });
+
+        const time = now.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true,
+            timeZone: 'Africa/Accra'
+        });
+
+        const botOwner = global.ownerName || 'ABZTECH';
+        const user = m.pushName || m.sender?.split('@')[0] || 'User';
+
+        const menuText = `
 
 ┌─ム xʟɪᴄᴏɴ ᴍᴜʟᴛɪᴅᴇᴠɪᴄᴇ
 │ ᴏᴡɴᴇʀ: ${botOwner}
@@ -59,6 +58,8 @@ async execute(sock, m) {
 │ ᪣ ${prefix}ᴛᴛs
 │ ᪣ ${prefix}ᴘᴏʟʟ
 │ ᪣ ${prefix}sʜᴀᴢᴀᴍ
+│ ᪣ ${prefix}ᴛᴇxᴛᴘʀᴏ
+│ ᪣ ${prefix}ᴄʜɪᴅ
 │
 ├─ム *ᴀɪ*
 │ ᪣ ${prefix}ᴀɪ
@@ -75,6 +76,7 @@ async execute(sock, m) {
 │ ᪣ ${prefix}ᴛᴀɢᴍᴇ
 │ ᪣ ${prefix}ᴄᴏᴜᴘʟᴇᴘᴘ
 │ ᪣ ${prefix}ɢʀᴏᴜᴘ
+│ ᪣ ${prefix}ɢɪɴғᴏ
 │
 ├─ム *sᴛᴀᴛᴜs*
 │ ᪣ ${prefix}ɢsᴛᴀᴛᴜs
@@ -90,26 +92,18 @@ async execute(sock, m) {
 > 「 𝙏𝙞𝙢𝙚 - 𝙏𝙞𝙢𝙚𝙡𝙚𝙨𝙨 」
 `.trim();
 
-    try {    
-        const imageBuffer = (await axios.get(global.menuImage, { responseType: 'arraybuffer' })).data;    
-        
-        await m.reply(imageBuffer, { 
-            caption: menuText,
-            contextInfo: {
-                forwardingScore: 999,
-                isForwarded: true,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363230794474148@newsletter',
-                    newsletterName: '──𝘈𝘉-𝘡𝘛𝘌𝘊𝘏🇬🇭「 𝙏𝙞𝙢𝙚 - 𝙏𝙞𝙢𝙚𝙡𝙚𝙨𝙨 」',
-                    serverMessageId: 1
-                }
-            }
-        });
-        
-    } catch (err) {    
-        console.error('Menu error:', err);    
-        return;
-    }    
-}
+        try {
+            const imageBuffer = (await axios.get(global.menuImage, {
+                responseType: 'arraybuffer'
+            })).data;
 
+            await m.reply(imageBuffer, {
+                caption: menuText
+            });
+
+        } catch (err) {
+            console.error('Menu error:', err);
+            return;
+        }
+    }
 };
