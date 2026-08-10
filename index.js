@@ -54,7 +54,7 @@ function loadPrefix() {
             const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
             if (config.prefix) {
                 global.BOT_PREFIX = config.prefix;
-                console.log(`✅ Loaded prefix: ${global.BOT_PREFIX}`);
+                console.log(`Loaded prefix: ${global.BOT_PREFIX}`);
             }
         } catch (err) {
             console.error('Error loading config:', err);
@@ -64,7 +64,7 @@ function loadPrefix() {
 }
 
 function startBot() {
-    console.log('🚀 Starting WhatsApp Bot...');
+    console.log('Starting WhatsApp Bot...');
     isConnecting = true;
 
     if (!fs.existsSync(AUTH_FOLDER)) {
@@ -77,19 +77,19 @@ function startBot() {
             const creds = JSON.parse(fs.readFileSync(credsPath, 'utf8'));
             if (creds.noiseKey && creds.noiseKey.private) {
                 
-                console.log('📁 Using existing session...');
+                console.log('Using existing session...');
             } else {
-                console.log('⚠️ Invalid session detected, will create new one...');
+                console.log('Invalid session detected, will create new one...');
             }
         } catch (err) {
-            console.log('⚠️ Corrupted session, will create new one...');
+            console.log('Corrupted session, will create new one...');
         }
     }
 
     (async () => {
         try {
             const { version, isLatest } = await fetchLatestWaWebVersion();
-            console.log(`📱 Using WA v${version.join(".")}, isLatest: ${isLatest}`);
+            console.log(`Using WA v${version.join(".")}, isLatest: ${isLatest}`);
 
             const { state, saveCreds } = await useMultiFileAuthState(AUTH_FOLDER);
             
@@ -170,7 +170,7 @@ function startBot() {
 
                     try {
                         await sock.sendMessage(sock.user.id, {
-                            text: `🤖 Bot linked successfully!\n📝 Current prefix: ${global.BOT_PREFIX}\n👑 Owners: ${global.owners.length}\n⏰ Connected at: ${new Date().toLocaleString()}`
+                            text: `Bot linked successfully!\nCurrent prefix: ${global.BOT_PREFIX}\nOwners: ${global.owners.length}\nConnected at: ${new Date().toLocaleString()}`
                         });
                     } catch (err) {}
                 } 
@@ -183,7 +183,7 @@ function startBot() {
 
             sock.ev.on('creds.update', async () => {
                 await saveCreds();
-                console.log('💾 Credentials updated');
+                console.log('Credentials updated');
             });
 
             const plugins = new Map();
@@ -203,20 +203,20 @@ function startBot() {
                                         plugins.set(alias.toLowerCase(), plugin);
                                     });
                                 }
-                                console.log(`✅ Loaded plugin: ${plugin.name}`);
+                                console.log(`Loaded plugin: ${plugin.name}`);
                             } else {
-                                console.warn(`⚠️ Invalid plugin structure in ${file}`);
+                                console.warn(`Invalid plugin structure in ${file}`);
                             }
                         } catch (error) {
-                            console.error(`❌ Failed to load plugin ${file}:`, error.message);
+                            console.error(`Failed to load plugin ${file}:`, error.message);
                         }
                     }
-                    console.log(`📦 Total plugins loaded: ${plugins.size}`);
+                    console.log(`Total plugins loaded: ${plugins.size}`);
                 } catch (error) {
-                    console.error('❌ Error loading plugins:', error);
+                    console.error('Error loading plugins:', error);
                 }
             } else {
-                console.log('📁 No plugins folder found');
+                console.log('No plugins folder found');
             }
            
      sock.ev.on('messages.upsert', async ({ messages, type }) => {
@@ -236,9 +236,9 @@ function startBot() {
                     rawMsg.key.server_id.toString(), 
                     emoji
                 );
-                console.log(`✅ Channel reaction: ${emoji} to message ${rawMsg.key.server_id}`);
+                console.log(`Channel reaction: ${emoji} to message ${rawMsg.key.server_id}`);
             } catch (err) {
-                console.log("❌ Channel React Error:", err.message);
+                console.log("Channel React Error:", err.message);
             }
             continue;
         }
@@ -247,11 +247,11 @@ function startBot() {
     for (const rawMsg of messages) {
         if (rawMsg.key.remoteJid === 'status@broadcast' && rawMsg.key.participant) {
             try {
-                console.log(`📱 Status detected from: ${rawMsg.key.participant}`);
+                console.log(`Status detected from: ${rawMsg.key.participant}`);
                 await sock.readMessages([rawMsg.key]);
                 continue;
             } catch (err) {
-                console.log('❌ Status viewer error:', err.message);
+                console.log('Status viewer error:', err.message);
             }
         }
     }
@@ -267,7 +267,7 @@ function startBot() {
                 const blocked = await plugin.onMessage(sock, m);
                 if (blocked === true) return;
             } catch (err) { 
-                console.error(`❌ onMessage error (${plugin.name}):`, err); 
+                console.error(`onMessage error (${plugin.name}):`, err); 
             }
         }
     }
@@ -281,8 +281,8 @@ function startBot() {
             try { 
                 await plugin.execute(sock, m, args); 
             } catch (err) { 
-                console.error(`❌ Plugin error (${commandName}):`, err); 
-                await m.reply('❌ Error running command.'); 
+                console.error(`Plugin error (${commandName}):`, err); 
+                await m.reply('Error running command.'); 
             }
         }
     }
@@ -307,7 +307,7 @@ function startBot() {
 
                             if (userId === sock.user.id) continue
 
-                            const text = `👋 Welcome @${memberName}!\n🎉 Glad to have you in this group!`
+                            const text = `Welcome @${memberName}!\nGlad to have you in this group!`
 
                             await sock.sendMessage(groupId, {
                                 text,
@@ -327,16 +327,16 @@ function startBot() {
                     }
 
                 } catch (err) {
-                    console.error('❌ group-participants.update error:', err)
+                    console.error('group-participants.update error:', err)
                 }
             })
 
             sock.ev.on('messages.reaction', async (reactions) => {
-                console.log('💖 Reaction update:', reactions);
+                console.log('Reaction update:', reactions);
             });
 
         } catch (error) {
-            console.error('❌ Bot startup error:', error);
+            console.error('Bot startup error:', error);
             isConnecting = false;
             setTimeout(() => startBot(), 10000);
         }
@@ -349,605 +349,190 @@ const server = http.createServer((req, res) => {
     if (url === '/' || url === '/qr') {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(`<!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>WhatsApp Bot | Multi-Feature Bot</title>
-  <link rel="preconnect" href="https:
-  <link rel="preconnect" href="https:
-  <link href="https:
-  <link rel="stylesheet" href="https:
-  <style>
-    :root {
-      --ink: #172033;
-      --muted: #6b7280;
-      --line: #d9e1ea;
-      --panel: rgba(255, 255, 255, 0.86);
-      --green: #16a34a;
-      --cyan: #0891b2;
-      --amber: #f59e0b;
-      --purple: #8b5cf6;
-      --shadow: 0 24px 70px rgba(20, 35, 58, 0.18);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      min-height: 100vh;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--ink);
-      background: radial-gradient(circle at top left, rgba(34, 197, 94, 0.12), transparent 18rem),
-                  linear-gradient(180deg, #f8fafc, #eef6f1);
-      display: grid;
-      place-items: center;
-      padding: max(16px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
-    }
-
-    .app {
-      width: min(560px, 100%);
-      min-height: min(800px, calc(100vh - 32px));
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      padding: 14px;
-      background: rgba(255, 255, 255, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.92);
-      border-radius: 32px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
-    }
-
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      position: sticky;
-      top: 0;
-      z-index: 3;
-      margin: -14px -14px 0;
-      padding: max(14px, env(safe-area-inset-top)) 14px 12px;
-      background: rgba(248, 250, 252, 0.88);
-      border-bottom: 1px solid rgba(217, 225, 234, 0.76);
-      backdrop-filter: blur(16px);
-    }
-
-    .brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      color: var(--ink);
-      font-weight: 900;
-      font-size: 1.08rem;
-    }
-
-    .brand i {
-      width: 42px;
-      height: 42px;
-      display: grid;
-      place-items: center;
-      color: white;
-      background: linear-gradient(135deg, var(--green), var(--cyan));
-      border-radius: 12px;
-      font-size: 1.3rem;
-    }
-
-    .status-pill {
-      min-height: 38px;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 13px;
-      border: 1px solid var(--line);
-      border-radius: 100px;
-      background: white;
-      color: var(--ink);
-      font-size: 0.78rem;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .status-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: #94a3b8;
-    }
-
-    .status-dot.disconnected { background: #ef4444; box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.1); animation: pulse 1.2s infinite alternate; }
-    .status-dot.connecting { background: var(--amber); box-shadow: 0 0 0 5px rgba(245, 158, 11, 0.2); animation: pulse 1.2s infinite alternate; }
-    .status-dot.connected { background: #22c55e; box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.18); animation: pulse 0.9s infinite alternate; }
-
-    @keyframes pulse {
-      from { transform: scale(0.92); opacity: 0.72; }
-      to { transform: scale(1.1); opacity: 1; }
-    }
-
-    .panel {
-      border: 1px solid var(--line);
-      border-radius: 24px;
-      background: var(--panel);
-      overflow: hidden;
-      box-shadow: 0 10px 28px rgba(20, 35, 58, 0.08);
-    }
-
-    .panel-head {
-      min-height: 62px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .panel-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 900;
-    }
-
-    .panel-title i {
-      color: var(--green);
-    }
-
-    .tag {
-      padding: 7px 9px;
-      border-radius: 40px;
-      background: #ecfeff;
-      color: #0e7490;
-      font-weight: 900;
-      font-size: 0.7rem;
-      white-space: nowrap;
-    }
-
-    .qr-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 20px;
-      padding: 24px;
-      background: linear-gradient(90deg, rgba(15, 23, 42, 0.02) 1px, transparent 1px),
-                  linear-gradient(rgba(15, 23, 42, 0.02) 1px, transparent 1px),
-                  #ffffff;
-      background-size: 28px 28px;
-    }
-
-    .qr-wrapper {
-      background: white;
-      padding: 16px;
-      border-radius: 24px;
-      box-shadow: 0 16px 38px rgba(15, 23, 42, 0.12);
-      border: 1px solid #e5e7eb;
-    }
-
-    .qr-img {
-      width: min(58vw, 260px);
-      height: auto;
-      display: block;
-      border-radius: 16px;
-    }
-
-    .qr-placeholder {
-      width: min(58vw, 260px);
-      text-align: center;
-      padding: 40px 20px;
-      background: #f8fafc;
-      border-radius: 24px;
-      border: 2px dashed #cbd5e1;
-    }
-
-    .qr-placeholder i {
-      font-size: 3rem;
-      color: #94a3b8;
-      margin-bottom: 12px;
-    }
-
-    .qr-placeholder p {
-      color: #64748b;
-      font-size: 0.85rem;
-      font-weight: 500;
-    }
-
-    .info-text {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 12px 16px;
-      background: #f1f5f9;
-      border-radius: 60px;
-      color: #475569;
-      font-size: 0.8rem;
-      font-weight: 600;
-    }
-
-    .pairing-form {
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .pairing-form label {
-      color: #475569;
-      font-size: 0.78rem;
-      font-weight: 800;
-      margin-bottom: -4px;
-    }
-
-    .pairing-input {
-      width: 100%;
-      min-height: 50px;
-      border: 1.5px solid var(--line);
-      border-radius: 16px;
-      background: white;
-      color: var(--ink);
-      padding: 0 18px;
-      font-weight: 600;
-      outline: none;
-      font-size: 1rem;
-      transition: all 0.2s;
-    }
-
-    .pairing-input:focus {
-      border-color: var(--green);
-      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
-    }
-
-    .btn-group {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    .btn {
-      min-height: 52px;
-      border: none;
-      border-radius: 60px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      cursor: pointer;
-      font-weight: 800;
-      font-size: 0.9rem;
-      transition: all 0.2s ease;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--green), var(--cyan));
-      color: white;
-      box-shadow: 0 8px 20px rgba(22, 163, 74, 0.25);
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      filter: brightness(1.04);
-      transform: translateY(-1px);
-    }
-
-    .btn-primary:active:not(:disabled) {
-      transform: scale(0.98);
-    }
-
-    .btn-secondary {
-      background: #f1f5f9;
-      color: #334155;
-      border: 1px solid var(--line);
-    }
-
-    .btn-secondary:hover:not(:disabled) {
-      background: #e2e8f0;
-    }
-
-    .btn:disabled {
-      cursor: not-allowed;
-      opacity: 0.6;
-    }
-
-    .pairing-code-box {
-      background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-      border-radius: 20px;
-      padding: 20px;
-      text-align: center;
-      margin-top: 12px;
-    }
-
-    .pairing-code-box span {
-      font-size: clamp(2rem, 10vw, 3rem);
-      font-weight: 900;
-      letter-spacing: 4px;
-      color: #14532d;
-      font-family: monospace;
-    }
-
-    .pairing-code-box small {
-      display: block;
-      margin-top: 10px;
-      color: #475569;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-
-    .loader-text {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 16px;
-      border-top: 1px solid var(--line);
-      color: #334155;
-      font-size: 0.85rem;
-      font-weight: 700;
-    }
-
-    .spinner {
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(22, 163, 74, 0.22);
-      border-top-color: var(--green);
-      border-radius: 999px;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .footer-note {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 12px;
-      color: #64748b;
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-align: center;
-    }
-
-    .footer-note i {
-      color: var(--green);
-    }
-
-    @media (max-width: 620px) {
-      body {
-        padding: 0;
-      }
-      .app {
-        width: 100%;
-        min-height: 100vh;
-        border-radius: 0;
-        border: none;
-      }
-      .brand span {
-        display: none;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Bot</title>
 </head>
 <body>
-  <main class="app">
-    <header class="topbar">
-      <div class="brand">
-        <i class="fab fa-whatsapp"></i>
-        <span>WhatsApp Bot</span>
-      </div>
-      <div class="status-pill">
-        <span class="status-dot disconnected" id="statusDot"></span>
-        <span id="statusLabel">Disconnected</span>
-      </div>
-    </header>
-
-    <section class="panel">
-      <div class="panel-head">
-        <div class="panel-title">
-          <i class="fas fa-qrcode"></i> QR Login
+    <div style="max-width: 800px; margin: 20px auto; padding: 20px; font-family: Arial, sans-serif;">
+        <h1>WhatsApp Bot</h1>
+        <hr>
+        
+        <h2>Status</h2>
+        <p><strong>Status:</strong> <span id="statusLabel">Disconnected</span></p>
+        <p><strong>Prefix:</strong> ${global.BOT_PREFIX || '.'}</p>
+        <p><strong>Uptime:</strong> <span id="uptime">0s</span></p>
+        <hr>
+        
+        <h2>QR Code Login</h2>
+        <div id="qrArea" style="margin: 20px 0; padding: 20px; border: 1px solid #ccc; border-radius: 8px; text-align: center; min-height: 200px;">
+            <p>Loading QR code...</p>
         </div>
-        <div class="tag">
-          <i class="fas fa-mobile-alt"></i> WhatsApp Web
+        <hr>
+        
+        <h2>Pair with Code</h2>
+        <div style="margin: 20px 0; padding: 20px; border: 1px solid #ccc; border-radius: 8px;">
+            <label>Phone Number (with country code):</label><br>
+            <input type="tel" id="phoneNumber" placeholder="233533763772" style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; font-size: 16px;">
+            <button id="pairBtn" style="width: 100%; padding: 12px; background: #25D366; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold;">Get Pairing Code</button>
+            <div id="pairingCodeDisplay" style="display: none; margin-top: 15px; padding: 15px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; text-align: center;">
+                <p><strong>Pairing Code:</strong></p>
+                <p id="pairingCode" style="font-size: 24px; font-weight: bold; color: #155724;"></p>
+                <p style="font-size: 12px; color: #155724;">Enter this code in WhatsApp > Linked Devices > Link with phone number</p>
+            </div>
         </div>
-      </div>
-      <div id="qrArea" class="qr-container">
-        <div class="qr-placeholder" id="qrPlaceholder">
-          <i class="fas fa-spinner fa-pulse"></i>
-          <p>Loading QR code...</p>
+        <hr>
+        
+        <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 4px; text-align: center;">
+            <p style="margin: 5px; font-size: 14px; color: #6c757d;">Session stored securely | Auto-reconnect enabled</p>
         </div>
-      </div>
-      <div id="statusText" class="loader-text">
-        <i class="fas fa-circle-info"></i>
-        <span>Waiting for connection...</span>
-      </div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head">
-        <div class="panel-title">
-          <i class="fas fa-key"></i> Pair with Code
-        </div>
-        <div class="tag">Alternative</div>
-      </div>
-      <div class="pairing-form">
-        <label>📱 Phone Number (with country code)</label>
-        <input type="tel" id="phoneNumber" class="pairing-input" placeholder="233533763772" autocomplete="off">
-        <button id="pairBtn" class="btn btn-primary">
-          <i class="fas fa-link"></i> Get Pairing Code
-        </button>
-      </div>
-      <div id="pairingCodeDisplay" style="display: none;" class="pairing-code-box">
-        <i class="fas fa-key" style="color: var(--green); font-size: 1.2rem;"></i>
-        <div>
-          <span id="pairingCode"></span>
-        </div>
-        <small>Enter this code in WhatsApp > Linked Devices > Link with phone number</small>
-      </div>
-    </section>
-
-    <div class="footer-note">
-      <i class="fas fa-shield-alt"></i>
-      <span>Session stored securely | Auto-reconnect enabled</span>
     </div>
-  </main>
 
-  <script>
-    let refreshInterval = null;
-    let currentQR = null;
+    <script>
+        let refreshInterval = null;
+        let currentQR = null;
 
-    function setStatus(status) {
-      const statusElem = document.getElementById('statusLabel');
-      const statusDot = document.getElementById('statusDot');
-      const statusText = document.getElementById('statusText');
-      
-      let statusLabel = '';
-      let dotClass = 'disconnected';
-      let loaderHtml = '';
-      
-      switch(status) {
-        case 'disconnected':
-          statusLabel = 'Disconnected';
-          dotClass = 'disconnected';
-          loaderHtml = '<i class="fas fa-circle-info"></i><span>Bot disconnected. Waiting for reconnection...</span>';
-          break;
-        case 'connecting':
-          statusLabel = 'Connecting';
-          dotClass = 'connecting';
-          loaderHtml = '<span class="spinner"></span><span>Connecting to WhatsApp...</span>';
-          break;
-        case 'connected':
-          statusLabel = 'Connected';
-          dotClass = 'connected';
-          loaderHtml = '<i class="fas fa-check-circle" style="color: #22c55e;"></i><span>Bot is online and ready!</span>';
-          break;
-        default:
-          statusLabel = status;
-          dotClass = 'disconnected';
-      }
-      
-      statusElem.innerText = statusLabel;
-      statusDot.className = 'status-dot ' + dotClass;
-      if (statusText) statusText.innerHTML = loaderHtml;
-    }
+        function setStatus(status) {
+            const statusElem = document.getElementById('statusLabel');
+            let statusText = status.charAt(0).toUpperCase() + status.slice(1);
+            statusElem.textContent = statusText;
+            statusElem.style.color = status === 'connected' ? '#28a745' : status === 'connecting' ? '#ffc107' : '#dc3545';
+        }
 
-    function updateQR(qrData) {
-      const qrArea = document.getElementById('qrArea');
-      if (qrData) {
-        currentQR = qrData;
-        qrArea.innerHTML = \`
-          <div class="qr-wrapper">
-            <img class="qr-img" src="\${qrData}" alt="QR Code">
-          </div>
-          <div class="info-text">
-            <i class="fas fa-camera"></i>
-            <span>Scan with WhatsApp > Linked Devices</span>
-          </div>
-        \`;
-      } else {
-        qrArea.innerHTML = \`
-          <div class="qr-placeholder">
-            <i class="fas fa-qrcode"></i>
-            <p>QR code will appear here when ready</p>
-          </div>
-        \`;
-      }
-    }
+        function updateQR(qrData) {
+            const qrArea = document.getElementById('qrArea');
+            if (qrData) {
+                currentQR = qrData;
+                qrArea.innerHTML = \`
+                    <div style="display: inline-block; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <img src="\${qrData}" alt="QR Code" style="max-width: 250px; width: 100%; height: auto;">
+                    </div>
+                    <p style="margin-top: 10px; font-size: 14px; color: #6c757d;">
+                        Scan with WhatsApp > Linked Devices > Link a Device
+                    </p>
+                \`;
+            } else {
+                qrArea.innerHTML = \`
+                    <div style="padding: 40px 20px; background: #f8f9fa; border-radius: 8px;">
+                        <p style="font-size: 48px; margin: 0;">QR</p>
+                        <p style="color: #6c757d;">QR code will appear here when ready</p>
+                    </div>
+                \`;
+            }
+        }
 
-    function updatePairingCode(code) {
-      const displayDiv = document.getElementById('pairingCodeDisplay');
-      const codeSpan = document.getElementById('pairingCode');
-      if (code && code !== 'null' && code !== 'undefined') {
-        codeSpan.innerText = code;
-        displayDiv.style.display = 'block';
-      } else {
-        displayDiv.style.display = 'none';
-      }
-    }
+        function updatePairingCode(code) {
+            const displayDiv = document.getElementById('pairingCodeDisplay');
+            const codeSpan = document.getElementById('pairingCode');
+            if (code && code !== 'null' && code !== 'undefined') {
+                codeSpan.textContent = code;
+                displayDiv.style.display = 'block';
+            } else {
+                displayDiv.style.display = 'none';
+            }
+        }
 
-    async function fetchStatus() {
-      try {
-        const resp = await fetch('/api/status');
-        if (!resp.ok) throw new Error('Status fetch failed');
-        const data = await resp.json();
-        
-        setStatus(data.status);
-        
-        if (data.qr && data.qr !== currentQR) {
-          updateQR(data.qr);
-        } else if (!data.qr && data.status !== 'connected') {
-          updateQR(null);
+        function updateUptime(uptime) {
+            const uptimeElem = document.getElementById('uptime');
+            if (uptime) {
+                const seconds = Math.floor(uptime);
+                const minutes = Math.floor(seconds / 60);
+                const hours = Math.floor(minutes / 60);
+                const days = Math.floor(hours / 24);
+                
+                let uptimeStr = '';
+                if (days > 0) uptimeStr += days + 'd ';
+                if (hours > 0) uptimeStr += (hours % 24) + 'h ';
+                if (minutes > 0) uptimeStr += (minutes % 60) + 'm ';
+                uptimeStr += (seconds % 60) + 's';
+                
+                uptimeElem.textContent = uptimeStr;
+            }
+        }
+
+        async function fetchStatus() {
+            try {
+                const resp = await fetch('/api/status');
+                if (!resp.ok) throw new Error('Status fetch failed');
+                const data = await resp.json();
+                
+                setStatus(data.status);
+                updateUptime(data.uptime);
+                
+                if (data.status === 'connected') {
+                    updateQR(null);
+                    updatePairingCode(null);
+                } else if (data.qr && data.qr !== currentQR) {
+                    updateQR(data.qr);
+                } else if (!data.qr) {
+                    updateQR(null);
+                }
+                
+                updatePairingCode(data.pairingCode);
+                
+            } catch (err) {
+                console.error('Status poll error:', err);
+            }
+        }
+
+        async function requestPairingCode() {
+            const phoneInput = document.getElementById('phoneNumber');
+            const phone = phoneInput.value.trim();
+            const pairBtn = document.getElementById('pairBtn');
+            
+            if (!phone) {
+                alert('Please enter your phone number with country code');
+                return;
+            }
+            
+            if (!phone.match(/^[0-9]{10,15}$/)) {
+                alert('Please enter a valid phone number (numbers only, with country code)');
+                return;
+            }
+            
+            pairBtn.disabled = true;
+            pairBtn.textContent = 'Requesting...';
+            
+            try {
+                const formData = new URLSearchParams();
+                formData.append('phone', phone);
+                
+                const resp = await fetch('/pair', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+                
+                const text = await resp.text();
+                if (resp.ok && text.includes('Pairing Code')) {
+                    fetchStatus();
+                    setTimeout(() => fetchStatus(), 2000);
+                    setTimeout(() => fetchStatus(), 5000);
+                } else {
+                    alert('Failed to get pairing code. Make sure bot is connecting first.');
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            } finally {
+                pairBtn.disabled = false;
+                pairBtn.textContent = 'Get Pairing Code';
+            }
         }
         
-        updatePairingCode(data.pairingCode);
-        
-        if (data.status === 'connected') {
-          updateQR(null);
-        }
-      } catch (err) {
-        console.error('Status poll error:', err);
-      }
-    }
-
-    async function requestPairingCode() {
-      const phoneInput = document.getElementById('phoneNumber');
-      const phone = phoneInput.value.trim();
-      const pairBtn = document.getElementById('pairBtn');
-      
-      if (!phone) {
-        alert('Please enter your phone number with country code');
-        return;
-      }
-      
-      if (!phone.match(/^[0-9]{10,15}$/)) {
-        alert('Please enter a valid phone number (numbers only, with country code)');
-        return;
-      }
-      
-      pairBtn.disabled = true;
-      pairBtn.innerHTML = '<span class="spinner"></span><span>Requesting...</span>';
-      
-      try {
-        const formData = new URLSearchParams();
-        formData.append('phone', phone);
-        
-        const resp = await fetch('/pair', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: formData
+        document.getElementById('pairBtn').addEventListener('click', requestPairingCode);
+        document.getElementById('phoneNumber').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') requestPairingCode();
         });
         
-        const text = await resp.text();
-        if (resp.ok && text.includes('Pairing Code Generated')) {
-          fetchStatus();
-          setTimeout(() => fetchStatus(), 2000);
-        } else {
-          alert('Failed to get pairing code. Make sure bot is connecting first.');
-        }
-      } catch (err) {
-        alert('Error: ' + err.message);
-      } finally {
-        pairBtn.disabled = false;
-        pairBtn.innerHTML = '<i class="fas fa-link"></i> Get Pairing Code';
-      }
-    }
-    
-    document.getElementById('pairBtn').addEventListener('click', requestPairingCode);
-    document.getElementById('phoneNumber').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') requestPairingCode();
-    });
-    
-    refreshInterval = setInterval(fetchStatus, 2000);
-    fetchStatus();
-    
-    window.addEventListener('beforeunload', () => {
-      if (refreshInterval) clearInterval(refreshInterval);
-    });
-  </script>
+        refreshInterval = setInterval(fetchStatus, 2000);
+        fetchStatus();
+        
+        window.addEventListener('beforeunload', () => {
+            if (refreshInterval) clearInterval(refreshInterval);
+        });
+    </script>
 </body>
 </html>`);
     } 
@@ -964,11 +549,11 @@ const server = http.createServer((req, res) => {
     </style>
 </head>
 <body>
-    <h1>🔗 Pair WhatsApp</h1>
+    <h1>Pair WhatsApp</h1>
     <form method="POST">
         Phone: <input type="text" name="phone" placeholder="911234567890" required><br><br>
         <button type="submit">Get Code</button><br><br>
-        <a href="/">← Back</a>
+        <a href="/">Back</a>
     </form>
 </body>
 </html>`);
@@ -984,7 +569,7 @@ const server = http.createServer((req, res) => {
                 
                 if (!phoneNumber) {
                     res.writeHead(200, { 'Content-Type': 'text/html' });
-                    res.end(`<center><h2>❌ Error: Phone number required</h2><a href="/pair">Try Again</a></center>`);
+                    res.end(`<center><h2>Error: Phone number required</h2><a href="/pair">Try Again</a></center>`);
                     return;
                 }
 
@@ -992,7 +577,7 @@ const server = http.createServer((req, res) => {
                 
                 if (botStatus !== 'connecting' || !sock) {
                     res.writeHead(200, { 'Content-Type': 'text/html' });
-                    res.end(`<center><h2>⚠️ Bot not ready</h2><p>Status: ${botStatus}</p><p>Please wait for QR code to appear first</p><a href="/">← Go Back</a></center>`);
+                    res.end(`<center><h2>Bot not ready</h2><p>Status: ${botStatus}</p><p>Please wait for QR code to appear first</p><a href="/">Go Back</a></center>`);
                     return;
                 }
 
@@ -1014,24 +599,24 @@ const server = http.createServer((req, res) => {
     </style>
 </head>
 <body>
-    <h1>✅ Pairing Code Generated</h1>
+    <h1>Pairing Code Generated</h1>
     <h2>Phone: ${phoneNumber}</h2>
     <div class="code">Code: ${pairingCode}</div>
     <div class="info">
-        <p>📱 Go to WhatsApp > Settings > Linked Devices > Link a Device</p>
-        <p>🔢 Select "Use pairing code" and enter the code above</p>
+        <p>Go to WhatsApp > Settings > Linked Devices > Link a Device</p>
+        <p>Select "Use pairing code" and enter the code above</p>
     </div>
     <br>
-    <a href="/">🏠 Home</a> | <a href="/pair">🔄 Pair Another</a>
+    <a href="/">Home</a> | <a href="/pair">Pair Another</a>
 </body>
 </html>`);
 
-                console.log(`✅ Pairing code for ${phoneNumber}: ${pairingCode}`);
+                console.log(`Pairing code for ${phoneNumber}: ${pairingCode}`);
                 
             } catch (error) {
-                console.error('❌ Pair error:', error);
+                console.error('Pair error:', error);
                 res.writeHead(200, { 'Content-Type': 'text/html' });
-                res.end(`<center><h2>❌ Error</h2><p>${error.message}</p><p>Make sure the phone number is in international format (e.g., 911234567890)</p><a href="/pair">↩️ Try Again</a></center>`);
+                res.end(`<center><h2>Error</h2><p>${error.message}</p><p>Make sure the phone number is in international format (e.g., 911234567890)</p><a href="/pair">Try Again</a></center>`);
             }
         });
         return;
@@ -1063,27 +648,27 @@ const server = http.createServer((req, res) => {
     
     else {
         res.writeHead(404, { 'Content-Type': 'text/html' });
-        res.end(`<center><h1>404 - Page Not Found</h1><a href="/">🏠 Go Home</a></center>`);
+        res.end(`<center><h1>404 - Page Not Found</h1><a href="/">Go Home</a></center>`);
     }
 });
 
 server.listen(PORT, () => {
-    console.log(`🌐 Web server running at http:
-    console.log(`📁 Session folder: ${path.resolve(AUTH_FOLDER)}`);
+    console.log(`Web server running at http://localhost:${PORT}`);
+    console.log(`Session folder: ${path.resolve(AUTH_FOLDER)}`);
     loadPrefix();
 });
 
 process.on('SIGINT', () => {
-    console.log('\n👋 Shutting down gracefully...');
+    console.log('\nShutting down gracefully...');
     if (presenceInterval) clearInterval(presenceInterval);
     if (sock) sock.end();
     process.exit(0);
 });
 
 process.on('uncaughtException', (err) => {
-    console.error('⚠️ Uncaught Exception:', err);
+    console.error('Uncaught Exception:', err);
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-    console.error('⚠️ Unhandled Rejection:', reason);
+    console.error('Unhandled Rejection:', reason);
 });
