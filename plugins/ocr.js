@@ -17,8 +17,9 @@ module.exports = {
 
       const buffer = await m.quoted.download()
 
+      if (!process.env.OCR_API_KEY) return m.reply('OCR API key is not configured.')
       const form = new FormData()
-      form.append('apikey', process.env.OCR_API_KEY || 'K81241004488957')
+      form.append('apikey', process.env.OCR_API_KEY)
       form.append('language', 'eng')
       form.append('isOverlayRequired', 'false')
       form.append('file', buffer, {
