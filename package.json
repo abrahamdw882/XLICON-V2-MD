@@ -19,7 +19,6 @@
     "xlicon"
   ],
   "dependencies": {
-    "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/baileys": "^7.0.0-rc13",
     "acrcloud": "^1.4.0",
