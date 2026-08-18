@@ -1,191 +1,84 @@
 const axios = require('axios');
-
 const yts = require('yt-search');
 
 module.exports = {
-
-name: 'ytdl',
-
-description: 'Download YouTube audio (link or search)',
-
-aliases: ['ytmp3', 'ytaudio', 'ytdlv3'],
-
-tags: ['downloader'],
-
-command: /^.?(ytdl|ytmp3|ytaudio|ytdlv3)/i,
-
-async execute(sock, m, args) {
-
-try {
-
-
-
-  if (!args[0]) {
-
-    return m.reply("Usage:\n.ytdl <youtube link>\n.ytdl <search query>");
-
-  }
-
-
-
-  await m.reply("⭐𝘗𝘭𝘦𝘢𝘴𝘦 𝘸𝘢𝘪𝘵... 𝘗𝘳𝘰𝘤𝘦𝘴𝘴𝘪𝘯𝘨 𝘳𝘦𝘲𝘶𝘦𝘴𝘵.");
-
-
-
-  let input = args.join(" ").trim();
-
-  let finalUrl = input;
-
-
-
-  if (!input.includes("youtube.com") && !input.includes("youtu.be")) {
-
-    const results = await yts(input);
-
-
-
-    if (!results || !results.videos || results.videos.length === 0) {
-
-      return m.reply("No results found on YouTube.");
-
-    }
-
-
-
-    finalUrl = results.videos[0].url;
-
-  }
-
-
-
-  const apiUrl = `https://api-abztech.zone.id/download/ytdlv3?url=${encodeURIComponent(finalUrl)}`;
-
-  const apiRes = await axios.get(apiUrl);
-
-  const data = apiRes.data;
-
-
-
-  if (!data || !data.status) {
-
-    return m.reply(`API Error: ${data?.message || "Unknown error"}`);
-
-  }
-
-
-
-  const { downloadUrl, filename, title, thumbnail } = data;
-
-
-
-  const audioRes = await axios.get(downloadUrl, {
-
-    responseType: "arraybuffer"
-
-  });
-
-
-
-  const buffer = Buffer.from(audioRes.data);
-
-
-
-  const quotedMsg = m.quoted || {
-
-    key: {
-
-      remoteJid: m.from,
-
-      fromMe: false,
-
-      id: m.id,
-
-      participant: m.sender
-
-    },
-
-    message: {
-
-      extendedTextMessage: {
-
-        text: m.body
-
-      }
-
-    }
-
-  };
-
-
-
-  await sock.sendMessage(
-
-    m.from,
-
-    {
-
-      audio: buffer,
-
-      mimetype: "audio/mpeg",
-
-      fileName: filename,
-
-      ptt: false,
-
-      contextInfo: {
-
-        forwardingScore: 999,
-
-        isForwarded: true,
-
-        forwardedNewsletterMessageInfo: {
-
-          newsletterJid: '120363230794474148@newsletter',
-
-          newsletterName: '𝘈𝘉-𝘡𝘛𝘌𝘊𝘏🇬🇭「 𝙏𝙞𝙢𝙚 - 𝙏𝙞𝙢𝙚𝙡𝙚𝙨𝙨 」',
-
-          serverMessageId: 1
-
-        },
-
-        externalAdReply: {
-
-          title: title || filename,
-
-          body: "Powered by ABZ Tech",
-
-          thumbnailUrl: thumbnail,   
-
-          mediaType: 1,
-
-          mediaUrl: finalUrl,
-
-          sourceUrl: finalUrl,
-
-          renderLargerThumbnail: true,
-
-          showAdAttribution: false
-
+    name: 'ytmp3',
+    description: 'Download YouTube audio (link or search)',
+    aliases: ['ytdl', 'ytaudio', 'ytdlv3'],
+    tags: ['downloader'],
+    command: /^.?(ytmp3|ytdl|ytaudio|ytdlv3)/i,
+
+    async execute(sock, m, args) {
+        const chatId = m.key.remoteJid;
+        const input = args.join(" ").trim();
+
+        if (!input) {
+            return m.reply("Usage:\n.ytmp3 <youtube link>\n.ytmp3 <search query>");
         }
 
-      }
+        try {
+            await sock.sendMessage(chatId, {
+                react: { text: '🎵', key: m.key }
+            });
 
-    },
+            let finalUrl = input;
 
-    { quoted: quotedMsg }
+            if (!input.includes("youtube.com") && !input.includes("youtu.be")) {
+                const results = await yts(input);
 
-  );
+                if (!results || !results.videos || results.videos.length === 0) {
+                    return m.reply("No results found on YouTube.");
+                }
 
+                finalUrl = results.videos[0].url;
+            }
 
+            const apiUrl = `https://eliteprotech-apis.zone.id/convert?url=${encodeURIComponent(finalUrl)}&format=mp3`;
+            const apiRes = await axios.get(apiUrl);
+            const data = apiRes.data;
 
-} catch (err) {
+            if (!data || !data.success) {
+                return m.reply(`API Error: ${data?.message || "Unknown error"}`);
+            }
 
-  console.error('YTDL error:', err.response?.data || err.message);
+            const { downloadURL, title } = data;
 
-  m.reply('Failed to process request.');
+            const audioRes = await axios.get(downloadURL, {
+                responseType: "arraybuffer"
+            });
 
-}
+            const buffer = Buffer.from(audioRes.data);
 
-}
+            const quotedMsg = m.quoted || {
+                key: {
+                    remoteJid: chatId,
+                    fromMe: false,
+                    id: m.id,
+                    participant: m.sender
+                },
+                message: {
+                    extendedTextMessage: {
+                        text: m.body
+                    }
+                }
+            };
 
+            const safeName = (title || "audio").replace(/[\\/:*?"<>|]/g, "");
+
+            await sock.sendMessage(
+                chatId,
+                {
+                    audio: buffer,
+                    mimetype: "audio/mpeg",
+                    fileName: `${safeName}.mp3`,
+                    ptt: false
+                },
+                { quoted: quotedMsg }
+            );
+
+        } catch (err) {
+            console.error('YTMP3 error:', err.response?.data || err.message);
+            m.reply('Failed to process request.');
+        }
+    }
 };
