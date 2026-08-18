@@ -30,35 +30,51 @@ module.exports = {
                 return m.reply('Invalid group invite link.');
             }
 
-            const r = await sock.groupGetInviteInfo(code);
+            const invite = await sock.groupGetInviteInfo(code);
 
-            if (!r || !r.id) {
+            if (!invite || !invite.id) {
                 return m.reply('Unable to retrieve group information.');
             }
+
+            const meta = await sock.groupMetadata(invite.id).catch(() => null);
+
+            const participants = meta?.participants || [];
+            const admins = participants.filter(p => p.admin);
 
             const info = `
 *Group Info:*
 
-- *ID:* ${r.id}
-- *Name:* ${r.subject || 'Unknown'}
-- *Description:* ${r.desc || 'None'}
-- *Owner:* ${r.owner || 'Unknown'}
-- *Participants:* ${r.participants?.length || 0}
+- *ID:* ${invite.id}
+- *Name:* ${meta?.subject || invite.subject || 'Unknown'}
+- *Description:* ${meta?.desc || invite.desc || 'None'}
+- *Owner:* ${meta?.owner || invite.owner || 'Unknown'}
+- *Participants:* ${participants.length || invite.size || 0}
+- *Admins:* ${admins.length}
 - *Disappearing Messages:* ${
-                r.ephemeralDuration ? r.ephemeralDuration + 's' : 'Off'
+                meta?.ephemeralDuration || invite.ephemeralDuration
+                    ? (meta?.ephemeralDuration || invite.ephemeralDuration) + 's'
+                    : 'Off'
             }
-- *Announce Only:* ${r.announce ? 'Yes' : 'No'}
-- *Restricted Settings:* ${r.restrict ? 'Yes' : 'No'}
+- *Announce Only:* ${
+                meta?.announce ?? invite.announce ? 'Yes' : 'No'
+            }
+- *Restricted Settings:* ${
+                meta?.restrict ?? invite.restrict ? 'Yes' : 'No'
+            }
 - *Member Add Mode:* ${
-                r.memberAddMode ? 'All members' : 'Admins only'
+                meta?.memberAddMode ?? invite.memberAddMode
+                    ? 'All members'
+                    : 'Admins only'
             }
 - *Join Approval:* ${
-                r.joinApprovalMode ? 'Required' : 'Not required'
+                meta?.joinApprovalMode ?? invite.joinApprovalMode
+                    ? 'Required'
+                    : 'Not required'
             }
 `.trim();
 
             const pp = await sock
-                .profilePictureUrl(r.id, 'image')
+                .profilePictureUrl(invite.id, 'image')
                 .catch(() => null);
 
             if (pp) {
