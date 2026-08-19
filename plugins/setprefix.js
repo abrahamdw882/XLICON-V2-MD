@@ -51,20 +51,6 @@ module.exports = {
             return m.reply('❌ Error saving prefix to config file.');
         }
 
-        const notifications = global.owners.map(owner =>
-            sock.sendMessage(owner, {
-                text:
-                    `⚙️ *Prefix Updated*\n\n` +
-                    `New prefix: \`${newPrefix}\`\n` +
-                    `Changed by: @${m.sender.split('@')[0]}\n` +
-                    `Time: ${new Date().toLocaleTimeString()}`
-            }).catch(err => {
-                console.error(`Could not notify owner ${owner}:`, err);
-            })
-        );
-
-        Promise.allSettled(notifications);
-
         return m.reply(
             `✅ Prefix successfully changed to: \`${newPrefix}\``
         );
