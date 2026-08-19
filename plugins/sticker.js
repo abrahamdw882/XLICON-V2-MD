@@ -1,5 +1,5 @@
 const sharp = require("sharp");
-const { addStickerMetadata } = require("../lib/stick");
+const { addStickerMetadata } = require("../lib/sticker");
 
 module.exports = {
     name: "sticker",
