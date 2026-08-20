@@ -1,3 +1,5 @@
+const sharp = require('sharp');
+
 module.exports = {
     name: 'alive',
     description: 'Check if the bot is alive',
@@ -7,43 +9,43 @@ module.exports = {
 
     async execute(sock, m) {
         try {
-            const name = m.pushName || m.sender.split('@')[0];
-            const audioUrl = 'https://files.catbox.moe/tcz5xk.mp3';
-            const thumbnail = 'https://i.ibb.co/BVmdwyv8/IMG-20260417-WA0030.jpg';
-            const quoted = {
+            const width = 300;
+            const height = 300;
+
+            const imageResponse = await fetch('https://i.ibb.co/BVmdwyv8/IMG-20260417-WA0030.jpg');
+            const imageBuffer = await imageResponse.arrayBuffer();
+
+            const thumb = await sharp(Buffer.from(imageBuffer))
+                .resize(width, height)
+                .jpeg({ quality: 40 })
+                .toBuffer();
+
+            const audioUrl = 'https://eliteprotech-url.zone.id/1787244048021ghdr1r.mp3';
+            const audioResponse = await fetch(audioUrl);
+            const audioBuffer = await audioResponse.arrayBuffer();
+
+            const fakeQuoted = {
                 key: {
+                    remoteJid: m.from,
                     fromMe: false,
                     participant: m.sender,
-                    ...(m.isGroup ? { remoteJid: m.from } : {}),
+                    id: 'fakeid123'
                 },
                 message: {
-                    contactMessage: {
-                        displayName: name,
-                        vcard: `BEGIN:VCARD\nVERSION:3.0\nN:;a,;;;\nFN:${name}\nitem1.TEL;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`,
-                    },
-                },
+                    imageMessage: {
+                        mimetype: 'image/jpeg',
+                        jpegThumbnail: thumb,
+                        caption: 'i am alive'
+                    }
+                }
             };
-            await m.send(
-                {
-                    audio: { url: audioUrl },
-                    mimetype: 'audio/mpeg',
-                    ptt: false,
-                    waveform: [100, 0, 100, 0, 100, 0, 100],
-                    fileName: 'Alive',
-                    contextInfo: {
-                        mentionedJid: [m.sender],
-                        externalAdReply: {
-                            title: 'I AM ALIVE',
-                            body: 'BOT STATUS',
-                            thumbnailUrl: thumbnail,
-                            sourceUrl: 'https://www.whatsapp.com/channel/0029VaMGgVL3WHTNkhzHik3c',
-                            mediaType: 1,
-                            renderLargerThumbnail: true,
-                        },
-                    },
-                },
-                { quoted }
-            );
+
+            await sock.sendMessage(m.from, {
+                audio: Buffer.from(audioBuffer),
+                mimetype: 'audio/mp4',
+                ptt: false
+            }, { quoted: fakeQuoted });
+
         } catch (err) {
             console.error('❌ Alive plugin error:', err);
         }
