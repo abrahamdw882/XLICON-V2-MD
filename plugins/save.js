@@ -11,15 +11,9 @@ module.exports = {
         
         const isOwner = owners.includes(sender) || sender === botId;
         
-        if (!isOwner) {
-            return await sock.sendMessage(m.from, {
-                text: 'This command can only be used by the bot owner!'
-            });
-        }
+        if (!isOwner) return;
         
-        if (!m.quoted) {
-            return m.reply(`SAVE MEDIA COMMAND\n\nUsage: .save (reply to a media message)\n\nYou can save:\nImages\nVideos\nAudio\nDocuments\nView once media`);
-        }
+        if (!m.quoted) return;
         
         try {
             let msg = m.quoted.message;
@@ -48,11 +42,7 @@ module.exports = {
                 }
             }
             
-            if (!mediaType) {
-                return m.reply('No media found in the quoted message');
-            }
-            
-            await m.reply(`Downloading media...`);
+            if (!mediaType) return;
             
             const buffer = await downloadMediaMessage(
                 { message: msg },
@@ -63,46 +53,25 @@ module.exports = {
             
             const mediaData = msg[mediaType];
             const mimetype = mediaData.mimetype || '';
-            const caption = mediaData.caption || `Saved on ${new Date().toLocaleString()}`;
             
             if (mediaType === 'imageMessage') {
-                await sock.sendMessage(m.sender, {
-                    image: buffer,
-                    caption: `Image saved\n\n${caption}`
-                });
+                await sock.sendMessage(m.sender, { image: buffer });
             } 
             else if (mediaType === 'videoMessage') {
-                await sock.sendMessage(m.sender, {
-                    video: buffer,
-                    caption: `Video saved\n\n${caption}`,
-                    mimetype: mimetype
-                });
+                await sock.sendMessage(m.sender, { video: buffer, mimetype: mimetype });
             }
             else if (mediaType === 'audioMessage') {
-                await sock.sendMessage(m.sender, {
-                    audio: buffer,
-                    mimetype: mimetype,
-                    ptt: mediaData.ptt || false
-                });
+                await sock.sendMessage(m.sender, { audio: buffer, mimetype: mimetype, ptt: mediaData.ptt || false });
             }
             else if (mediaType === 'documentMessage') {
-                await sock.sendMessage(m.sender, {
-                    document: buffer,
-                    mimetype: mimetype,
-                    fileName: mediaData.fileName || 'document'
-                });
+                await sock.sendMessage(m.sender, { document: buffer, mimetype: mimetype, fileName: mediaData.fileName || 'document' });
             }
             else if (mediaType === 'stickerMessage') {
-                await sock.sendMessage(m.sender, {
-                    sticker: buffer
-                });
+                await sock.sendMessage(m.sender, { sticker: buffer });
             }
-            
-            await m.reply(`Media saved successfully!\nCheck your private chat`);
             
         } catch (err) {
             console.error('save command error:', err);
-            await m.reply(`Failed to save media\n\n${err.message}`);
         }
     }
 };
