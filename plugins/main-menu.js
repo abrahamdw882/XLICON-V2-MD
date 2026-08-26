@@ -115,8 +115,7 @@ module.exports = {
                         mediaType: 1,
                         renderLargerThumbnail: true,
                         thumbnailUrl: 'https://whatsapp.com/channel/0029VaMGgVL3WHTNkhzHik3c',
-                        thumbnail: imageBuffer,
-                        sourceUrl: 'https://whatsapp.com/channel/0029VaMGgVL3WHTNkhzHik3c'
+                        thumbnail: imageBuffer
                     }
                 }
             }, { quoted: fquoted });
