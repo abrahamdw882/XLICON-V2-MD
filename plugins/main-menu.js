@@ -9,6 +9,7 @@ module.exports = {
         const prefix = global.BOT_PREFIX || '.';
 
         const now = new Date();
+
         const date = now.toLocaleDateString('en-GB', {
             day: 'numeric',
             month: 'long',
@@ -92,47 +93,17 @@ module.exports = {
 `.trim();
 
         try {
-            const imageBuffer = await axios.get(global.menuImage || 'https://sam-cdn.zone.id/files/rzkeIq.jpg', {
+            const imageBuffer = (await axios.get(global.menuImage, {
                 responseType: 'arraybuffer'
-            }).then(res => Buffer.from(res.data));
+            })).data;
 
-            const fquoted = {
-                key: {
-                    fromMe: false,
-                    participant: '0@s.whatsapp.net',
-                    remoteJid: '120363400662819774@g.us'
-                },
-                message: {
-                    stickerPackMessage: {
-                        stickerPackId: 'XLICONV2',
-                        name: 'XLICON V2',
-                        publisher: 'ABZTECH'
-                    }
-                }
-            };
-
-            await sock.sendMessage(m.from, {
-                text: menuText,
-                contextInfo: {
-                    externalAdReply: {
-                        showAdAttribution: false,
-                        title: `XLICON V2 MENU`,
-                        body: `👋 ʜᴇʟʟᴏ ${user}!`,
-                        mediaType: 1,
-                        renderLargerThumbnail: true,
-                        thumbnailUrl: 'https://whatsapp.com/channel/0029VaMGgVL3WHTNkhzHik3c',
-                        thumbnail: imageBuffer
-                    }
-                }
-            }, { quoted: fquoted });
+            await m.reply(imageBuffer, {
+                caption: menuText
+            });
 
         } catch (err) {
             console.error('Menu error:', err);
-            try {
-                await m.reply(menuText);
-            } catch (fallbackErr) {
-                console.error('Fallback error:', fallbackErr);
-            }
+            return;
         }
     }
 };
