@@ -9,7 +9,6 @@ module.exports = {
         const prefix = global.BOT_PREFIX || '.';
 
         const now = new Date();
-
         const date = now.toLocaleDateString('en-GB', {
             day: 'numeric',
             month: 'long',
@@ -30,80 +29,105 @@ module.exports = {
 
         const menuText = `
 
-┌─ム xʟɪᴄᴏɴ ᴍᴜʟᴛɪᴅᴇᴠɪᴄᴇ
-│ ᴏᴡɴᴇʀ: ${botOwner}
-│ ᴜsᴇʀ: ${user}
-│ ᴅᴀᴛᴇ: ${date}
-│ ᴛɪᴍᴇ: ${time} (GMT)
-│ ᴘʀᴇғɪx: ${prefix}
-╰──────────────────╯
-
-┌─ム ᴀᴠᴀɪʟᴀʙʟᴇ ᴄᴏᴍᴍᴀɴᴅs
+┌─ ɢᴇɴᴇʀᴀʟ ᴄᴏᴍᴍᴀɴᴅs
 │
-├─ム *ɢᴇɴᴇʀᴀʟ*
-│ ᪣ ${prefix}ᴀʟɪᴠᴇ
-│ ᪣ ${prefix}ᴘɪɴɢ
-│ ᪣ ${prefix}ᴜᴘᴛɪᴍᴇ
-│ ᪣ ${prefix}ᴏᴡɴᴇʀ
-│ ᪣ ${prefix}ᴍᴇɴᴜ2
+├─ғ *ɢᴇɴᴇʀᴀʟ*
+│ ꪜ ${prefix}ᴀʀɪᴇ
+│ ꪜ ${prefix}ʜɪɴɢ
+│ ꪜ ${prefix}ᴜᴘᴛɪᴍᴇ
+│ ꪜ ${prefix}ᴏᴡɴᴇʀ
+│ ꪜ ${prefix}ᴍᴇɴᴜ2
 │
-├─ム *ᴅᴏᴡɴʟᴏᴀᴅᴇʀs*
-│ ᪣ ${prefix}ᴛɪᴋᴛᴏᴋ / ${prefix}ᴛᴛ
-│ ᪣ ${prefix}ʏᴛᴍᴘ3
-│ ᪣ ${prefix}ɪɢ
+├─ғ *ᴅᴏᴡɴʟᴏᴀᴅᴇʀs*
+│ ꪜ ${prefix}ᴛɪᴋᴛᴏᴋ / ${prefix}ᴛᴛ
+│ ꪜ ${prefix}ᴛᴇᴍᴘ3
+│ ꪜ ${prefix}ɪɢ
 │
-├─ム *ᴛᴏᴏʟs*
-│ ᪣ ${prefix}sᴛɪᴄᴋᴇʀ
-│ ᪣ ${prefix}ᴏᴄʀ
-│ ᪣ ${prefix}ᴛᴛs
-│ ᪣ ${prefix}ᴘᴏʟʟ
-│ ᪣ ${prefix}sʜᴀᴢᴀᴍ
-│ ᪣ ${prefix}ᴛᴇxᴛᴘʀᴏ
-│ ᪣ ${prefix}ᴄʜɪᴅ
+├─ғ *ᴛᴏᴏʟs*
+│ ꪜ ${prefix}sᴛɪᴄᴋᴇʀ
+│ ꪜ ${prefix}ᴏᴄʀ
+│ ꪜ ${prefix}ᴛᴛs
+│ ꪜ ${prefix}ʜᴏʀʀ
+│ ꪜ ${prefix}sʜᴀǫᴀᴍ
+│ ꪜ ${prefix}ᴛᴇxᴛʜᴏʀᴏ
+│ ꪜ ${prefix}ᴄʜɪɴ
 │
-├─ム *ᴀɪ*
-│ ᪣ ${prefix}ᴀɪ
-│ ᪣ ${prefix}ᴀɪ-sᴇᴀʀᴄʜ
-│ ᪣ ${prefix}ᴀɪᴠ
-│ ᪣ ${prefix}ɢᴇɴ
+├─ғ *ᴀɪ*
+│ ꪜ ${prefix}ᴀɪ
+│ ꪜ ${prefix}ᴀɪ-sᴇᴀʀᴄʜ
+│ ꪜ ${prefix}ᴀɪᴘ
+│ ꪜ ${prefix}ɢᴇɴ
 │
-├─ム *ғᴜɴ*
-│ ᪣ ${prefix}ʙʟᴜᴇ
+├─ғ *ғᴜɴ*
+│ ꪜ ${prefix}ǫᴜᴇ
 │
-├─ム *ɢʀᴏᴜᴘ*
-│ ᪣ ${prefix}ᴛᴀɢᴀʟʟ
-│ ᪣ ${prefix}ᴛᴀɢᴀʟʟ1
-│ ᪣ ${prefix}ᴛᴀɢᴍᴇ
-│ ᪣ ${prefix}ᴄᴏᴜᴘʟᴇᴘᴘ
-│ ᪣ ${prefix}ɢʀᴏᴜᴘ
-│ ᪣ ${prefix}ɢɪɴғᴏ
+├─ғ *ɢʀᴏᴜᴘ*
+│ ꪜ ${prefix}ᴛᴀɢᴀʟʟ
+│ ꪜ ${prefix}ᴛᴀɢᴀʟʟ1
+│ ꪜ ${prefix}ᴛᴀɢᴍᴇ
+│ ꪜ ${prefix}ᴄᴏᴜɴᴛᴇᴍᴍ
+│ ꪜ ${prefix}ɢʀᴏᴜᴘ
+│ ꪜ ${prefix}ɢɪɴғᴏ
+│ ꪜ ${prefix}ᴅᴇʟ
+│ ꪜ ${prefix}ʟɪɴᴋ
 │
-├─ム *sᴛᴀᴛᴜs*
-│ ᪣ ${prefix}ɢsᴛᴀᴛᴜs
+├─ғ *sᴛᴀᴛᴜs*
+│ ꪜ ${prefix}ɢsᴛᴀᴛᴜs
 │
-├─ム *ᴄʜᴀɴɴᴇʟ*
-│ ᪣ ${prefix}ᴄʜᴀɴɴᴇʟɪᴅ
+├─ғ *ᴄʜᴀɴɴᴇʟ*
+│ ꪜ ${prefix}ᴄʜᴀɴɴᴇʟɪɴ
 │
-├─ム *ᴀᴅᴍɪɴ*
-│ ᪣ ${prefix}ᴋɪᴄᴋ
+├─ғ *ᴀᴅᴍɪɴ*
+│ ꪜ ${prefix}ʟɪᴋ
 │
-╰─────────◆────────╯
+└─────────────────◆─────────────────┘
 
 > 「 𝙏𝙞𝙢𝙚 - 𝙏𝙞𝙢𝙚𝙡𝙚𝙨𝙨 」
 `.trim();
 
         try {
-            const imageBuffer = (await axios.get(global.menuImage, {
+            const imageBuffer = await axios.get(global.menuImage || 'https://sam-cdn.zone.id/files/rzkeIq.jpg', {
                 responseType: 'arraybuffer'
-            })).data;
+            }).then(res => Buffer.from(res.data));
 
-            await m.reply(imageBuffer, {
-                caption: menuText
-            });
+            const fquoted = {
+                key: {
+                    fromMe: false,
+                    participant: '0@s.whatsapp.net',
+                    remoteJid: '120363400662819774@g.us'
+                },
+                message: {
+                    stickerPackMessage: {
+                        stickerPackId: 'XLICONV2',
+                        name: 'XLICON V2',
+                        publisher: 'ABZTECH'
+                    }
+                }
+            };
+
+            await sock.sendMessage(m.from, {
+                text: menuText,
+                contextInfo: {
+                    externalAdReply: {
+                        showAdAttribution: false,
+                        title: `XLICON V2 MENU`,
+                        body: `👋 ʜᴇʟʟᴏ ${user}!`,
+                        mediaType: 1,
+                        renderLargerThumbnail: true,
+                        thumbnailUrl: 'https://whatsapp.com/channel/0029VaMGgVL3WHTNkhzHik3c',
+                        thumbnail: imageBuffer,
+                        sourceUrl: 'https://whatsapp.com/channel/0029VaMGgVL3WHTNkhzHik3c'
+                    }
+                }
+            }, { quoted: fquoted });
 
         } catch (err) {
             console.error('Menu error:', err);
-            return;
+            try {
+                await m.reply(menuText);
+            } catch (fallbackErr) {
+                console.error('Fallback error:', fallbackErr);
+            }
         }
     }
 };
