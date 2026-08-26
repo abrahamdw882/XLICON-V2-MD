@@ -1,10 +1,9 @@
-const fs = require('fs');
 const axios = require('axios');
-const BodyForm = require('form-data');
+const FormData = require('form-data');
 
 module.exports = {
     name: 'tourl',
-    description: 'Upload files to uguu.se and get URL',
+    description: 'Upload files to sam-cdn.zone.id and get URL',
     aliases: ['upload', 'geturl', 'uguu'],
     tags: ['tools'],
     command: /^\.?(tourl|upload|geturl|uguu)$/i,
@@ -13,14 +12,14 @@ module.exports = {
         try {
             const quoted = m.quoted ? m.quoted : m;
             const mime = (quoted.msg || quoted).mimetype || '';
-            
-            if (!mime) {
+
+            if (!m.quoted || !mime) {
                 await m.reply(`┏━━━━━━━━━━━━━━━━━━━━┓
-┃ ᴇʀʀᴏʀ 
-┃ 
-┃ ᴘʟᴇᴀꜱᴇ ʀᴇᴘʟʏ ᴛᴏ ᴀɴ 
+┃ ᴇʀʀᴏʀ
+┃
+┃ ᴘʟᴇᴀꜱᴇ ʀᴇᴘʟʏ ᴛᴏ ᴀɴ
 ┃ ɪᴍᴀɢᴇ, ᴠɪᴅᴇᴏ, ᴏʀ ᴀᴜᴅɪᴏ
-┃ 
+┃
 ┃ ᴇxᴀᴍᴘʟᴇ: .ᴛᴏᴜʀʟ
 ┗━━━━━━━━━━━━━━━━━━━━┛`);
                 return;
@@ -28,72 +27,91 @@ module.exports = {
 
             await m.reply(`┏━━━━━━━━━━━━━━━━━━━━┓
 ┃ ᴜᴘʟᴏᴀᴅɪɴɢ...
-┃ 
+┃
 ┃ ᴘʟᴇᴀꜱᴇ ᴡᴀɪᴛ ᴀ ᴍᴏᴍᴇɴᴛ
 ┗━━━━━━━━━━━━━━━━━━━━┛`);
 
             const buffer = await quoted.download();
 
-            if (!fs.existsSync('./tmp')) {
-                fs.mkdirSync('./tmp', { recursive: true });
+            if (!buffer) {
+                throw new Error('Failed to download quoted file');
             }
 
-            let ext = mime.split('/')[1];
+            let ext = mime.split('/')[1] || 'bin';
+
             if (ext === 'jpeg') ext = 'jpg';
             if (ext === 'quicktime') ext = 'mov';
             if (ext === 'x-matroska') ext = 'mkv';
-            
-            const fileName = `./tmp/upload_${Date.now()}.${ext}`;
-            fs.writeFileSync(fileName, buffer);
+            if (ext.includes(';')) ext = ext.split(';')[0];
 
-            const result = await UploadFileUgu(fileName);
-            
-            fs.unlinkSync(fileName);
+            const filename = `upload_${Date.now()}.${ext}`;
+
+            const formData = new FormData();
+
+            formData.append('file', buffer, {
+                filename,
+                contentType: mime
+            });
+
+            const response = await axios.post(
+                'https://sam-cdn.zone.id/upload',
+                formData,
+                {
+                    headers: {
+                        ...formData.getHeaders(),
+                        'User-Agent': 'Rebix-Bot/1.0'
+                    },
+                    maxContentLength: Infinity,
+                    maxBodyLength: Infinity
+                }
+            );
+
+            if (!response.data?.success) {
+                throw new Error(
+                    response.data?.error ||
+                    response.data?.message ||
+                    'Upload failed'
+                );
+            }
+
+            const upload = response.data.upload;
+
+            const uploadUrl =
+                typeof upload === 'string'
+                    ? upload
+                    : upload?.url;
+
+            if (!uploadUrl) {
+                throw new Error('Upload succeeded but no URL was returned');
+            }
 
             const fileSizeKB = (buffer.length / 1024).toFixed(2);
             const fileSizeMB = (buffer.length / (1024 * 1024)).toFixed(2);
-            
-            const uploadUrl = result.url || result;
-            
-            const response = `┏━━━━━━━━━━━━━━━━━━━━┓
+
+            const result = `┏━━━━━━━━━━━━━━━━━━━━┓
 ┃ ᴜᴘʟᴏᴀᴅ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ
-┃ 
+┃
 ┃ ᴛʏᴘᴇ: ${mime.split('/')[0].toUpperCase()}
 ┃ ꜱɪᴢᴇ: ${fileSizeKB} ᴋʙ (${fileSizeMB} ᴍʙ)
 ┃ ᴜʀʟ: ${uploadUrl}
-┃ 
-┃ ᴜᴘʟᴏᴀᴅᴇᴅ ᴛᴏ ᴜɢᴜᴜ.ꜱᴇ
+┃
+┃ ᴜᴘʟᴏᴀᴅᴇᴅ
 ┗━━━━━━━━━━━━━━━━━━━━┛`;
-            
-            await m.reply(response);
+
+            await m.reply(result);
 
         } catch (err) {
             console.error('Tourl Error:', err);
+
             await m.reply(`┏━━━━━━━━━━━━━━━━━━━━┓
 ┃ ᴜᴘʟᴏᴀᴅ ꜰᴀɪʟᴇᴅ
-┃ 
-┃ ᴇʀʀᴏʀ: ${err.message.substring(0, 50)}
-┃ 
+┃
+┃ ᴇʀʀᴏʀ: ${err.response?.data?.message ||
+                err.response?.data?.error ||
+                err.message}
+┃
 ┃ ᴘʟᴇᴀꜱᴇ ᴛʀʏ ᴀɢᴀɪɴ
 ┗━━━━━━━━━━━━━━━━━━━━┛`);
         }
     }
 };
-
-async function UploadFileUgu(input) {
-    return new Promise(async (resolve, reject) => {
-        const form = new BodyForm();
-        form.append("files[]", fs.createReadStream(input));
-        await axios({
-            url: "https://uguu.se/upload.php",
-            method: "POST",
-            headers: {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                ...form.getHeaders()
-            },
-            data: form
-        }).then((data) => {
-            resolve(data.data.files[0]);
-        }).catch((err) => reject(err));
-    });
-}
