@@ -74,21 +74,41 @@ module.exports = {
 
             let imageBuffer = null
             try {
-                imageBuffer = (await axios.get(global.menuImage, { responseType: 'arraybuffer' })).data
+                imageBuffer = await axios.get(global.menuImage || 'https://sam-cdn.zone.id/files/rzkeIq.jpg', {
+                    responseType: 'arraybuffer'
+                }).then(res => Buffer.from(res.data))
             } catch {}
 
-            await m.reply(imageBuffer, {
-                caption: `${info}\n${text}`,
-                contextInfo: {
-                    forwardingScore: 999,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363230794474148@newsletter',
-                        newsletterName: '──𝘈𝘉-𝘡𝘛𝘌𝘊𝘏🇬🇭「 𝙏𝙞𝙢𝙚 - 𝙏𝙞𝙢𝙚𝙡𝙚𝙨𝙨 」',
-                        serverMessageId: 1
+            const fquoted = {
+                key: {
+                    fromMe: false,
+                    participant: '0@s.whatsapp.net',
+                    remoteJid: '120363400662819774@g.us'
+                },
+                message: {
+                    stickerPackMessage: {
+                        stickerPackId: 'XLICONV2',
+                        name: 'XLICON V2',
+                        publisher: 'ABZTECH'
                     }
                 }
-            })
+            }
+
+            await sock.sendMessage(m.from, {
+                text: `${info}\n${text}`,
+                contextInfo: {
+                    externalAdReply: {
+                        showAdAttribution: false,
+                        title: `XLICON V2 EXEC`,
+                        body: `⚡ ${m.pushName || 'User'} executed code`,
+                        mediaType: 1,
+                        renderLargerThumbnail: true,
+                        thumbnailUrl: 'https://whatsapp.com/channel/0029VaMGgVL3WHTNkhzHik3c',
+                        thumbnail: imageBuffer
+                    }
+                }
+            }, { quoted: fquoted })
+
         } catch (err) {
             await m.reply(`❌ Error:\n\`\`\`\n${err.stack || err.message}\n\`\`\``)
         } finally {
