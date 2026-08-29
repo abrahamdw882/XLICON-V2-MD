@@ -2,7 +2,7 @@ const axios = require('axios');
 
 module.exports = {
     name: 'textpro',
-    description: 'Generate text effects with various styles (neon, glitter, fire, shadow, gradient, dropwater, cloud, pixel, underwater)',
+    description: 'Generate text effects with various styles (neon, glitter, fire, shadow, gradient, dropwater, cloud, pixel, underwater, summer,thunder,pencil,leaves)',
     aliases: ['txtpro', 'texteffect', 'te'],
     tags: ['maker'],
     command: /^\.?(textpro|txtpro|texteffect|te)$/i,
@@ -18,7 +18,7 @@ module.exports = {
                 text = parts.slice(1).join('|').trim();
             }
             
-            const validStyles = ['neon', 'glitter', 'fire', 'shadow', 'gradient', 'dropwater', 'cloud', 'pixel', 'underwater'];
+            const validStyles = ['neon', 'glitter', 'fire', 'shadow', 'gradient', 'dropwater', 'cloud', 'pixel', 'underwater','summer','thunder','pencil','leaves'];
             const firstWord = args[0]?.toLowerCase();
             if (validStyles.includes(firstWord) && args.length > 1) {
                 style = firstWord;
@@ -37,6 +37,10 @@ module.exports = {
 │  ✦ cloud      » Cloud Sky
 │  ✦ pixel      » 3D Pixel
 │  ✦ underwater » Underwater
+│  ✦ summer     » summer
+│  ✦ thunder    » thunder
+│  ✦ pencil     » pencil
+│  ✦ leaves     » leaves
 ╰──────────────────◆
 
 📝 *Usage Examples:*
