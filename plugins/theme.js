@@ -57,6 +57,7 @@ if (!proto.Message.ProtocolMessage.__themePatched) {
         originalProtoMsgEncode(m, w);
         if (m.chatThemeSetting) {
             const themeBuf = ChatThemeSetting.encode(ChatThemeSetting.create(m.chatThemeSetting)).finish();
+
             w.uint32(242).bytes(themeBuf);
         }
         return w;
@@ -227,35 +228,14 @@ const buildThemeSetting = async (sock, input) => {
     };
 };
 
-// Accepts: "1203630xxxx@g.us", "123456789@lid", "1203630xxxx", or bare digits
-const normalizeGroupJid = (raw) => {
-    if (!raw) return null;
-    const s = String(raw).trim();
-    if (/@g\.us$/i.test(s)) return s;
-    if (/@lid$/i.test(s)) return s;
-    const digits = s.replace(/[^\d]/g, '');
-    if (digits.length >= 10) return `${digits}@g.us`;
-    return null;
-};
-
 const setGroupTheme = async (sock, groupJid, input) => {
-    const target = normalizeGroupJid(groupJid);
-    if (!target) {
-        throw new Error('Invalid group LID/JID. Use e.g. 1203630xxxx@g.us or 123456789@lid');
-    }
-
-    let meta;
-    try {
-        meta = await sock.groupMetadata(target);
-    } catch {
-        throw new Error(`Bot is not a member of ${target}`);
-    }
+    if (!groupJid.endsWith('@g.us')) throw new Error('This command can only be used in groups!');
 
     const { setting, label } = await buildThemeSetting(sock, input);
     const id = generateMessageId();
 
     const result = await sock.relayMessage(
-        target,
+        groupJid,
         {
             protocolMessage: {
                 type: 34,
@@ -268,37 +248,18 @@ const setGroupTheme = async (sock, groupJid, input) => {
         }
     );
 
-    return { id: result || id, label, target, subject: meta?.subject };
+    return { id: result || id, label };
 };
 
 const parseThemeArgs = (text = '', image = null) => {
     const q = text.trim();
-    const tokens = q.split(/\s+/).filter(Boolean);
-
-    let target = null;
-    if (tokens[0] && /(@g\.us|@lid)$/i.test(tokens[0])) {
-        target = tokens.shift();
-    } else if (tokens[0] && /^\d{10,}$/.test(tokens[0])) {
-        target = tokens.shift();
+    if (/^(reset|hapus|clear|default|restore)$/i.test(q)) return { type: 'reset' };
+    if (image && image.byteLength > 0 && !q) return { type: 'image', image };
+    if (/^https?:\/\/\S+$/i.test(q)) return { type: 'url', url: q };
+    if (COLOR_PRESETS[q.toLowerCase()] || /^#?[0-9a-f]{6}$/i.test(q)) {
+        return { type: 'color', color: q };
     }
-
-    const rest = tokens.join(' ').trim();
-
-    if (/^(reset|hapus|clear|default|restore)$/i.test(rest)) {
-        return { target, type: 'reset' };
-    }
-    if (image && image.byteLength > 0 && !rest) {
-        return { target, type: 'image', image };
-    }
-    if (/^https?:\/\/\S+$/i.test(rest)) {
-        return { target, type: 'url', url: rest };
-    }
-    if (COLOR_PRESETS[rest.toLowerCase()] || /^#?[0-9a-f]{6}$/i.test(rest)) {
-        return { target, type: 'color', color: rest };
-    }
-    if (image && image.byteLength > 0) {
-        return { target, type: 'image', image };
-    }
+    if (image && image.byteLength > 0) return { type: 'image', image };
     return null;
 };
 
@@ -309,6 +270,63 @@ module.exports = {
     tags: ['group', 'admin'],
 
     async execute(sock, m, args = []) {
+        if (!m.isGroup) {
+            return await m.reply('ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ᴄᴀɴ ᴏɴʟʏ ʙᴇ ᴜsᴇᴅ ɪɴ ɢʀᴏᴜᴘs!');
+        }
+
+
+        const chatId = m.from || m.chat;
+        let senderIsAdmin = m.isOwner;
+        let botIsAdmin = false;
+        try {
+            const { jidNormalizedUser } = require('@whiskeysockets/baileys');
+            const meta = await sock.groupMetadata(chatId);
+            const participants = meta?.participants || [];
+            const senderRaw = m.sender || '';
+            const botId = sock.user?.id || '';
+            const botLid = sock.user?.lid || '';
+            const senderNum = senderRaw.split(':')[0].split('@')[0];
+            const botNum = botId.split(':')[0].split('@')[0];
+            const botLidNum = botLid.split(':')[0].split('@')[0];
+
+            console.log('[THEME DEBUG] chatId:', chatId);
+            console.log('[THEME DEBUG] m.sender:', senderRaw, '-> senderNum:', senderNum);
+            console.log('[THEME DEBUG] botId:', botId, '-> botNum:', botNum);
+            console.log('[THEME DEBUG] botLid:', botLid, '-> botLidNum:', botLidNum);
+            console.log('[THEME DEBUG] m.isAdmin:', m.isAdmin, '| m.isBotAdmin:', m.isBotAdmin, '| m.isOwner:', m.isOwner);
+            console.log('[THEME DEBUG] participants count:', participants.length);
+
+            for (const p of participants) {
+                const pNum = (p.id || '').split(':')[0].split('@')[0];
+                if (pNum === senderNum) {
+                    console.log('[THEME DEBUG] sender match -> p.id:', p.id, '| p.admin:', p.admin);
+                    if (p.admin) senderIsAdmin = true;
+                }
+                if (pNum === botNum || pNum === botLidNum) {
+                    console.log('[THEME DEBUG] bot match -> p.id:', p.id, '| p.admin:', p.admin, '| matched via:', pNum === botNum ? 'phone' : 'lid');
+                    if (p.admin) botIsAdmin = true;
+                }
+            }
+
+            if (!senderIsAdmin) console.log('[THEME DEBUG] No participant matched sender number:', senderNum);
+            if (!botIsAdmin) console.log('[THEME DEBUG] No participant matched bot number:', botNum);
+        } catch (e) {
+            console.error('[THEME DEBUG] groupMetadata error:', e.message);
+            // fallback to handler values
+            senderIsAdmin = senderIsAdmin || m.isAdmin;
+            botIsAdmin = m.isBotAdmin;
+        }
+
+        console.log('[THEME DEBUG] FINAL -> senderIsAdmin:', senderIsAdmin, '| botIsAdmin:', botIsAdmin);
+
+        if (!senderIsAdmin) {
+            return await m.reply('ᴏɴʟʏ ɢʀᴏᴜᴘ ᴀᴅᴍɪɴs ᴏʀ ᴏᴡɴᴇʀs ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!');
+        }
+
+        if (!botIsAdmin) {
+            return await m.reply('ɪ ɴᴇᴇᴅ ᴛᴏ ʙᴇ ᴀɴ ᴀᴅᴍɪɴ ᴛᴏ ᴄʜᴀɴɢᴇ ᴛʜᴇ ɢʀᴏᴜᴘ ᴛʜᴇᴍᴇ!');
+        }
+
         const text = args.join(' ').trim();
         let imageBuffer = null;
 
@@ -336,17 +354,11 @@ module.exports = {
             const helpText =
                 `*ɢʀᴏᴜᴘ ᴛʜᴇᴍᴇ & ᴡᴀʟʟᴘᴀᴘᴇʀ*
 
-*ᴜsᴀɢᴇ (ɪɴsɪᴅᴇ ɢʀᴏᴜᴘ):*
-• \`.theme <color/preset>\` - sᴇᴛ sᴏʟɪᴅ ᴄᴏʟᴏʀ
-• \`.theme reset\` - ʀᴇsᴛᴏʀᴇ ᴅᴇғᴀᴜʟᴛ
-• ʀᴇᴘʟʏ ᴛᴏ ᴀɴ ɪᴍᴀɢᴇ ᴡɪᴛʜ \`.theme\` - sᴇᴛ ᴡᴀʟʟᴘᴀᴘᴇʀ
+*ᴜsᴀɢᴇ:*
+• \`.theme <color/preset>\` - sᴇᴛ sᴏʟɪᴅ ᴄᴏʟᴏʀ ᴛʜᴇᴍᴇ
+• \`.theme reset\` - ʀᴇsᴛᴏʀᴇ ᴅᴇғᴀᴜʟᴛ ᴛʜᴇᴍᴇ
+• ʀᴇᴘʟʏ ᴛᴏ ᴀɴ ɪᴍᴀɢᴇ ᴡɪᴛʜ \`.theme\` - sᴇᴛ ɢʀᴏᴜᴘ ᴡᴀʟʟᴘᴀᴘᴇʀ
 • \`.theme <image_url>\` - sᴇᴛ ᴡᴀʟʟᴘᴀᴘᴇʀ ғʀᴏᴍ ᴜʀʟ
-
-*ᴜsᴀɢᴇ (ᴀɴʏ ᴄʜᴀᴛ, ᴛᴀʀɢᴇᴛ ɢʀᴏᴜᴘ ʙʏ ʟɪᴅ/ᴊɪᴅ):*
-• \`.theme 1203630xxxx@g.us pink\`
-• \`.theme 123456789@lid reset\`
-• \`.theme 1203630xxxx@g.us https://.../img.jpg\`
-• ʀᴇᴘʟʏ ᴛᴏ ᴀɴ ɪᴍᴀɢᴇ ᴡɪᴛʜ \`.theme 1203630xxxx@g.us\`
 
 *ᴀᴠᴀɪʟᴀʙʟᴇ ᴘʀᴇsᴇᴛs:*
 ${presetNames}
@@ -354,69 +366,10 @@ _(ᴏʀ ᴀɴʏ ʜᴇx ᴄᴏʟᴏʀ ʟɪᴋᴇ #ff69b4)_`;
             return await m.reply(helpText);
         }
 
-        let targetGroup = input.target;
-        if (!targetGroup && m.isGroup) targetGroup = m.from || m.chat;
-
-        if (!targetGroup) {
-            return await m.reply(
-                'ᴘʟᴇᴀsᴇ sᴘᴇᴄɪғʏ ᴀ ɢʀᴏᴜᴘ ʟɪᴅ/ᴊɪᴅ, ᴇ.ɢ.\n`.theme 1203630xxxx@g.us pink`\nᴏʀ ʀᴜɴ ᴛʜɪs ɪɴsɪᴅᴇ ᴛʜᴇ ɢʀᴏᴜᴘ.'
-            );
-        }
-
-        const target = normalizeGroupJid(targetGroup);
-        if (!target) {
-            return await m.reply('Invalid group LID/JID.');
-        }
-
-        let senderIsAdmin = m.isOwner;
-        let botIsAdmin = false;
-        let groupSubject = null;
-
-        try {
-            const meta = await sock.groupMetadata(target);
-            groupSubject = meta?.subject || null;
-            const participants = meta?.participants || [];
-            const senderRaw = m.sender || '';
-            const botId = sock.user?.id || '';
-            const botLid = sock.user?.lid || '';
-            const senderNum = senderRaw.split(':')[0].split('@')[0];
-            const botNum = botId.split(':')[0].split('@')[0];
-            const botLidNum = botLid.split(':')[0].split('@')[0];
-
-            console.log('[THEME DEBUG] target:', target);
-            console.log('[THEME DEBUG] m.sender:', senderRaw, '-> senderNum:', senderNum);
-            console.log('[THEME DEBUG] botId:', botId, '-> botNum:', botNum);
-            console.log('[THEME DEBUG] botLid:', botLid, '-> botLidNum:', botLidNum);
-            console.log('[THEME DEBUG] m.isOwner:', m.isOwner);
-
-            for (const p of participants) {
-                const pNum = (p.id || '').split(':')[0].split('@')[0];
-                if (pNum === senderNum) {
-                    if (p.admin) senderIsAdmin = true;
-                }
-                if (pNum === botNum || pNum === botLidNum) {
-                    if (p.admin) botIsAdmin = true;
-                }
-            }
-        } catch (e) {
-            console.error('[THEME DEBUG] groupMetadata error:', e.message);
-            return await m.reply(`Bot is not a member of ${target}`);
-        }
-
-        console.log('[THEME DEBUG] FINAL -> senderIsAdmin:', senderIsAdmin, '| botIsAdmin:', botIsAdmin);
-
-        if (!senderIsAdmin) {
-            return await m.reply('ᴏɴʟʏ ɢʀᴏᴜᴘ ᴀᴅᴍɪɴs ᴏʀ ᴏᴡɴᴇʀs ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!');
-        }
-        if (!botIsAdmin) {
-            return await m.reply('ɪ ɴᴇᴇᴅ ᴛᴏ ʙᴇ ᴀɴ ᴀᴅᴍɪɴ ɪɴ ᴛʜᴀᴛ ɢʀᴏᴜᴘ ᴛᴏ ᴄʜᴀɴɢᴇ ᴛʜᴇ ᴛʜᴇᴍᴇ!');
-        }
-
         try {
             await m.reply('ᴄʜᴀɴɢɪɴɢ ɢʀᴏᴜᴘ ᴛʜᴇᴍᴇ...');
-            const result = await setGroupTheme(sock, target, input);
-            const where = result.subject ? `in *${result.subject}*` : `in ${result.target}`;
-            return await m.reply(`ɢʀᴏᴜᴘ ᴛʜᴇᴍᴇ ᴜᴘᴅᴀᴛᴇᴅ sᴜᴄᴄᴇssғᴜʟʟʏ ${where}: ${result.label}!`);
+            const result = await setGroupTheme(sock, chatId, input);
+            return await m.reply(`ɢʀᴏᴜᴘ ᴛʜᴇᴍᴇ ᴜᴘᴅᴀᴛᴇᴅ sᴜᴄᴄᴇssғᴜʟʟʏ: ${result.label}!`);
         } catch (error) {
             console.error('[THEME ERROR]', error);
             return await m.reply(`ғᴀɪʟᴇᴅ ᴛᴏ ᴜᴘᴅᴀᴛᴇ ɢʀᴏᴜᴘ ᴛʜᴇᴍᴇ: ${error.message}`);
